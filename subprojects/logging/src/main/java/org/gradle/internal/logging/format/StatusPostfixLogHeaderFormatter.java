@@ -36,11 +36,12 @@ public class StatusPostfixLogHeaderFormatter implements LogHeaderFormatter {
         }
 
         if (GUtil.isTrue(status)) {
-            message = message + ' ';
+            return Lists.newArrayList(new StyledTextOutputEvent.Span(message + ' '),
+                new StyledTextOutputEvent.Span(StyledTextOutput.Style.ProgressStatus, status),
+                new StyledTextOutputEvent.Span(EOL));
+        } else {
+            return Lists.newArrayList(new StyledTextOutputEvent.Span(message),
+                new StyledTextOutputEvent.Span(EOL));
         }
-
-        return Lists.newArrayList(new StyledTextOutputEvent.Span(message),
-            new StyledTextOutputEvent.Span(StyledTextOutput.Style.ProgressStatus, status),
-            new StyledTextOutputEvent.Span(EOL));
     }
 }

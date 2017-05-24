@@ -188,7 +188,7 @@ public class GroupingProgressLogEventGenerator extends BatchOutputEventListener 
         private final Object buildOpIdentifier;
         private final BuildOperationCategory buildOperationCategory;
 
-        private String status;
+        private String status = "";
 
         private List<RenderableOutputEvent> bufferedLogs = new ArrayList<RenderableOutputEvent>();
 
