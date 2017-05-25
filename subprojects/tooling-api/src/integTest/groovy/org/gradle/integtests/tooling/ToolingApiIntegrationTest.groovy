@@ -246,6 +246,7 @@ allprojects {
                         // Run the build
                         launcher.run();
                         System.out.println("Build was successful");
+                        System.out.println(outputStream);
                     } finally {
                         // Clean up
                         System.out.println("Cleaning up after the build");
