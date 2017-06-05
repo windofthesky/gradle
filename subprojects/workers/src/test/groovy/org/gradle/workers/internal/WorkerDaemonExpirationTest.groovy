@@ -26,13 +26,13 @@ class WorkerDaemonExpirationTest extends Specification {
     static final int OS_MEMORY_GB = 6
 
     def workingDir = new File("some-dir")
-    def defaultOptions = new DaemonForkOptions(null, null, ['default-options'])
-    def oneGbOptions = new DaemonForkOptions('1g', '1g', ['one-gb-options'])
-    def twoGbOptions = new DaemonForkOptions('2g', '2g', ['two-gb-options'])
-    def threeGbOptions = new DaemonForkOptions('3g', '3g', ['three-gb-options'])
+    def defaultOptions = new DaemonForkOptions(null, null, ['default-options'], workingDir)
+    def oneGbOptions = new DaemonForkOptions('1g', '1g', ['one-gb-options'], workingDir)
+    def twoGbOptions = new DaemonForkOptions('2g', '2g', ['two-gb-options'], workingDir)
+    def threeGbOptions = new DaemonForkOptions('3g', '3g', ['three-gb-options'], workingDir)
     def reportsMemoryUsage = true
     def daemonStarter = Mock(WorkerDaemonStarter) {
-        startDaemon(_, _, _) >> { Class<? extends WorkerProtocol> impl, File workDir, DaemonForkOptions forkOptions ->
+        startDaemon(_, _) >> { Class<? extends WorkerProtocol> impl, DaemonForkOptions forkOptions ->
             Mock(WorkerDaemonClient) {
                 getForkOptions() >> forkOptions
                 isCompatibleWith(_) >> { DaemonForkOptions otherForkOptions ->
@@ -187,7 +187,7 @@ class WorkerDaemonExpirationTest extends Specification {
     }
 
     private WorkerDaemonClient reserveNewClient(DaemonForkOptions forkOptions) {
-        return clientsManager.reserveNewClient(WorkerDaemonServer, workingDir, forkOptions)
+        return clientsManager.reserveNewClient(WorkerDaemonServer, forkOptions)
     }
 
     private WorkerDaemonClient reserveIdleClient(DaemonForkOptions forkOptions) {

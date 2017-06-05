@@ -29,6 +29,7 @@ import org.gradle.internal.service.scopes.AbstractPluginServiceRegistry;
 import org.gradle.jvm.internal.toolchain.JavaToolChainInternal;
 import org.gradle.process.internal.ExecActionFactory;
 import org.gradle.workers.internal.WorkerDaemonFactory;
+import org.gradle.workers.internal.WorkerDirectoryProvider;
 
 import javax.tools.JavaCompiler;
 
@@ -49,8 +50,8 @@ public class JavaToolChainServiceRegistry extends AbstractPluginServiceRegistry 
     }
 
     private static class ProjectScopeCompileServices {
-        JavaCompilerFactory createJavaCompilerFactory(GradleInternal gradle, WorkerDaemonFactory workerDaemonFactory, Factory<JavaCompiler> javaHomeBasedJavaCompilerFactory) {
-            return new DefaultJavaCompilerFactory(gradle.getRootProject().getProjectDir(), workerDaemonFactory, javaHomeBasedJavaCompilerFactory);
+        JavaCompilerFactory createJavaCompilerFactory(GradleInternal gradle, WorkerDaemonFactory workerDaemonFactory, Factory<JavaCompiler> javaHomeBasedJavaCompilerFactory, WorkerDirectoryProvider workerDirectoryProvider) {
+            return new DefaultJavaCompilerFactory(gradle.getRootProject().getProjectDir(), workerDaemonFactory, javaHomeBasedJavaCompilerFactory, workerDirectoryProvider);
         }
 
         JavaToolChainInternal createJavaToolChain(JavaCompilerFactory compilerFactory, ExecActionFactory execActionFactory) {

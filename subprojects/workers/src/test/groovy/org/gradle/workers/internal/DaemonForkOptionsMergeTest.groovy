@@ -20,9 +20,9 @@ import spock.lang.Specification
 
 class DaemonForkOptionsMergeTest extends Specification {
     DaemonForkOptions options1 = new DaemonForkOptions("200m", "1g", [" -Dfork=true ", "-Xdebug=false"],
-            [new File("lib/lib1.jar"), new File("lib/lib2.jar")], ["foo.bar", "baz.bar"])
+        [new File("lib/lib1.jar"), new File("lib/lib2.jar")], ["foo.bar", "baz.bar"], Mock(File))
     DaemonForkOptions options2 = new DaemonForkOptions("1g", "2000m", ["-XX:MaxHeapSize=300m", "-Dfork=true"],
-            [new File("lib/lib2.jar"), new File("lib/lib3.jar")], ["baz.bar", "other"])
+        [new File("lib/lib2.jar"), new File("lib/lib3.jar")], ["baz.bar", "other"], Mock(File))
     DaemonForkOptions merged = options1.mergeWith(options2)
 
     def "takes highest minHeapSize"() {

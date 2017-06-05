@@ -20,6 +20,7 @@ import org.gradle.workers.internal.WorkerDaemonFactory;
 import org.gradle.workers.internal.DaemonForkOptions;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.language.base.internal.compile.Compiler;
+import org.gradle.workers.internal.WorkerDirectoryProvider;
 
 import java.io.File;
 import java.util.Collections;
@@ -27,8 +28,11 @@ import java.util.Collections;
 public class DaemonJavaCompiler extends AbstractDaemonCompiler<JavaCompileSpec> {
     private static final Iterable<String> SHARED_PACKAGES = Collections.singleton("com.sun.tools.javac");
 
-    public DaemonJavaCompiler(File daemonWorkingDir, Compiler<JavaCompileSpec> delegate, WorkerDaemonFactory workerDaemonFactory) {
-        super(daemonWorkingDir, delegate, workerDaemonFactory);
+    private final File idleWorkingDir;
+
+    public DaemonJavaCompiler(File executionWorkingDir, Compiler<JavaCompileSpec> delegate, WorkerDaemonFactory workerDaemonFactory, WorkerDirectoryProvider workerDirectoryProvider) {
+        super(executionWorkingDir, delegate, workerDaemonFactory);
+        idleWorkingDir = workerDirectoryProvider.getIdleWorkingDirectory();
     }
 
     @Override
@@ -36,6 +40,6 @@ public class DaemonJavaCompiler extends AbstractDaemonCompiler<JavaCompileSpec> 
         ForkOptions forkOptions = spec.getCompileOptions().getForkOptions();
         return new DaemonForkOptions(
                 forkOptions.getMemoryInitialSize(), forkOptions.getMemoryMaximumSize(), forkOptions.getJvmArgs(),
-                Collections.<File>emptyList(), SHARED_PACKAGES);
+                Collections.<File>emptyList(), SHARED_PACKAGES, idleWorkingDir);
     }
 }

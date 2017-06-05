@@ -35,6 +35,7 @@ import org.gradle.play.platform.PlayPlatform;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 import org.gradle.util.TreeVisitor;
 import org.gradle.workers.internal.WorkerDaemonFactory;
+import org.gradle.workers.internal.WorkerDirectoryProvider;
 
 import java.io.File;
 import java.util.Set;
@@ -43,6 +44,7 @@ class DefaultPlayToolProvider implements PlayToolProvider {
 
     private final FileResolver fileResolver;
     private final WorkerDaemonFactory workerDaemonFactory;
+    private final WorkerDirectoryProvider workerDirectoryProvider;
     private final PlayPlatform targetPlatform;
     private WorkerProcessFactory workerProcessBuilderFactory;
     private final Set<File> twirlClasspath;
@@ -50,10 +52,11 @@ class DefaultPlayToolProvider implements PlayToolProvider {
     private final Set<File> javaScriptClasspath;
 
     public DefaultPlayToolProvider(FileResolver fileResolver, WorkerDaemonFactory workerDaemonFactory,
-                                   WorkerProcessFactory workerProcessBuilderFactory, PlayPlatform targetPlatform,
+                                   WorkerDirectoryProvider workerDirectoryProvider, WorkerProcessFactory workerProcessBuilderFactory, PlayPlatform targetPlatform,
                                    Set<File> twirlClasspath, Set<File> routesClasspath, Set<File> javaScriptClasspath) {
         this.fileResolver = fileResolver;
         this.workerDaemonFactory = workerDaemonFactory;
+        this.workerDirectoryProvider = workerDirectoryProvider;
         this.workerProcessBuilderFactory = workerProcessBuilderFactory;
         this.targetPlatform = targetPlatform;
         this.twirlClasspath = twirlClasspath;
@@ -67,13 +70,13 @@ class DefaultPlayToolProvider implements PlayToolProvider {
     public <T extends CompileSpec> Compiler<T> newCompiler(Class<T> spec) {
         if (TwirlCompileSpec.class.isAssignableFrom(spec)) {
             TwirlCompiler twirlCompiler = TwirlCompilerFactory.create(targetPlatform);
-            return cast(new DaemonPlayCompiler<TwirlCompileSpec>(fileResolver.resolve("."), twirlCompiler, workerDaemonFactory, twirlClasspath, twirlCompiler.getClassLoaderPackages()));
+            return cast(new DaemonPlayCompiler<TwirlCompileSpec>(fileResolver.resolve("."), twirlCompiler, workerDaemonFactory, workerDirectoryProvider, twirlClasspath, twirlCompiler.getClassLoaderPackages()));
         } else if (RoutesCompileSpec.class.isAssignableFrom(spec)) {
             RoutesCompiler routesCompiler = RoutesCompilerFactory.create(targetPlatform);
-            return cast(new DaemonPlayCompiler<RoutesCompileSpec>(fileResolver.resolve("."), routesCompiler, workerDaemonFactory, routesClasspath, routesCompiler.getClassLoaderPackages()));
+            return cast(new DaemonPlayCompiler<RoutesCompileSpec>(fileResolver.resolve("."), routesCompiler, workerDaemonFactory, workerDirectoryProvider, routesClasspath, routesCompiler.getClassLoaderPackages()));
         } else if (JavaScriptCompileSpec.class.isAssignableFrom(spec)) {
             GoogleClosureCompiler javaScriptCompiler = new GoogleClosureCompiler();
-            return cast(new DaemonPlayCompiler<JavaScriptCompileSpec>(fileResolver.resolve("."), javaScriptCompiler, workerDaemonFactory, javaScriptClasspath, javaScriptCompiler.getClassLoaderPackages()));
+            return cast(new DaemonPlayCompiler<JavaScriptCompileSpec>(fileResolver.resolve("."), javaScriptCompiler, workerDaemonFactory, workerDirectoryProvider, javaScriptClasspath, javaScriptCompiler.getClassLoaderPackages()));
         }
         throw new IllegalArgumentException(String.format("Cannot create Compiler for unsupported CompileSpec type '%s'", spec.getSimpleName()));
     }

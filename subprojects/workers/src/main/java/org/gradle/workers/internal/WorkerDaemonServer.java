@@ -24,12 +24,12 @@ public class WorkerDaemonServer extends WorkerServer {
     public DefaultWorkResult execute(ActionExecutionSpec spec) {
         ProcessEnvironment processEnvironment = NativeServices.getInstance().get(ProcessEnvironment.class);
         try {
-            processEnvironment.maybeSetProcessDir(spec.getWorkingDir());
+            processEnvironment.maybeSetProcessDir(spec.getExecutionWorkingDir());
             return super.execute(spec);
         } catch (Throwable t) {
             return new DefaultWorkResult(true, t);
         } finally {
-            processEnvironment.maybeSetProcessDir(spec.getDefaultDir());
+            processEnvironment.maybeSetProcessDir(spec.getIdleWorkingDir());
         }
     }
 

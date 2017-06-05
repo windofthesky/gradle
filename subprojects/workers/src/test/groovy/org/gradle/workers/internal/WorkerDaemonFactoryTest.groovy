@@ -43,7 +43,7 @@ class WorkerDaemonFactoryTest extends Specification {
 
     def "getting a worker daemon does not assume client use"() {
         when:
-        factory.getWorker(workerProtocolImplementation.class, workingDir, options);
+        factory.getWorker(workerProtocolImplementation.class, options);
 
         then:
         0 * clientsManager._
@@ -51,7 +51,7 @@ class WorkerDaemonFactoryTest extends Specification {
 
     def "new client is created when daemon is executed and no idle clients found"() {
         when:
-        factory.getWorker(workerProtocolImplementation.class, workingDir, options).execute(spec)
+        factory.getWorker(workerProtocolImplementation.class, options).execute(spec)
 
         then:
         1 * buildOperationWorkerRegistry.getCurrentWorkerLease() >> workerOperation
@@ -61,7 +61,7 @@ class WorkerDaemonFactoryTest extends Specification {
         1 * clientsManager.reserveIdleClient(options) >> null
 
         then:
-        1 * clientsManager.reserveNewClient(workerProtocolImplementation.class, workingDir, options) >> client
+        1 * clientsManager.reserveNewClient(workerProtocolImplementation.class, options) >> client
 
         then:
         1 * client.execute(spec, workerOperation, buildOperation)
@@ -73,7 +73,7 @@ class WorkerDaemonFactoryTest extends Specification {
 
     def "idle client is reused when daemon is executed"() {
         when:
-        factory.getWorker(workerProtocolImplementation.class, workingDir, options).execute(spec)
+        factory.getWorker(workerProtocolImplementation.class, options).execute(spec)
 
         then:
         1 * buildOperationWorkerRegistry.getCurrentWorkerLease() >> workerOperation
@@ -92,7 +92,7 @@ class WorkerDaemonFactoryTest extends Specification {
 
     def "client is released even if execution fails"() {
         when:
-        factory.getWorker(workerProtocolImplementation.class, workingDir, options).execute(spec)
+        factory.getWorker(workerProtocolImplementation.class, options).execute(spec)
 
         then:
         1 * buildOperationWorkerRegistry.getCurrentWorkerLease() >> workerOperation

@@ -28,7 +28,7 @@ public class DefaultWorkerDirectoryProvider implements WorkerDirectoryProvider {
     }
 
     @Override
-    public File getDefaultWorkerDirectory() {
+    public File getIdleWorkingDirectory() {
         File defaultWorkerDirectory = new File(gradleUserHomeDir, "workers");
         if (!defaultWorkerDirectory.exists() && !defaultWorkerDirectory.mkdirs()) {
             throw new IllegalStateException("Unable to create default worker directory at " + defaultWorkerDirectory.getAbsolutePath());

@@ -32,18 +32,20 @@ public class DaemonForkOptions {
     private final Iterable<String> jvmArgs;
     private final Iterable<File> classpath;
     private final Iterable<String> sharedPackages;
+    private final File defaultWorkingDir;
 
-    public DaemonForkOptions(@Nullable String minHeapSize, @Nullable String maxHeapSize, Iterable<String> jvmArgs) {
-        this(minHeapSize, maxHeapSize, jvmArgs, Collections.<File>emptyList(), Collections.<String>emptyList());
+    public DaemonForkOptions(@Nullable String minHeapSize, @Nullable String maxHeapSize, Iterable<String> jvmArgs, File defaultWorkingDir) {
+        this(minHeapSize, maxHeapSize, jvmArgs, Collections.<File>emptyList(), Collections.<String>emptyList(), defaultWorkingDir);
     }
 
     public DaemonForkOptions(@Nullable String minHeapSize, @Nullable String maxHeapSize, Iterable<String> jvmArgs, Iterable<File> classpath,
-                             Iterable<String> sharedPackages) {
+                             Iterable<String> sharedPackages, File defaultWorkingDir) {
         this.minHeapSize = minHeapSize;
         this.maxHeapSize = maxHeapSize;
         this.jvmArgs = jvmArgs;
         this.classpath = classpath;
         this.sharedPackages = sharedPackages;
+        this.defaultWorkingDir = defaultWorkingDir;
     }
 
     public String getMinHeapSize() {
@@ -66,6 +68,10 @@ public class DaemonForkOptions {
         return sharedPackages;
     }
 
+    public File getDefaultWorkingDir() {
+        return defaultWorkingDir;
+    }
+
     public boolean isCompatibleWith(DaemonForkOptions other) {
         return getHeapSizeMb(minHeapSize) >= getHeapSizeMb(other.getMinHeapSize())
                 && getHeapSizeMb(maxHeapSize) >= getHeapSizeMb(other.getMaxHeapSize())
@@ -84,7 +90,7 @@ public class DaemonForkOptions {
         mergedClasspath.addAll(getNormalizedClasspath(other.classpath));
         Set<String> mergedAllowedPackages = getNormalizedSharedPackages(sharedPackages);
         mergedAllowedPackages.addAll(getNormalizedSharedPackages(other.sharedPackages));
-        return new DaemonForkOptions(mergedMinHeapSize, mergedMaxHeapSize, mergedJvmArgs, mergedClasspath, mergedAllowedPackages);
+        return new DaemonForkOptions(mergedMinHeapSize, mergedMaxHeapSize, mergedJvmArgs, mergedClasspath, mergedAllowedPackages, defaultWorkingDir);
     }
 
     private int getHeapSizeMb(String heapSize) {

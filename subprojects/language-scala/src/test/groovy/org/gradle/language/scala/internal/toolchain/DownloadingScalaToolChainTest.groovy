@@ -26,16 +26,18 @@ import org.gradle.workers.internal.WorkerDaemonFactory
 import org.gradle.api.internal.tasks.scala.ScalaCompileSpec
 import org.gradle.internal.text.TreeFormatter
 import org.gradle.language.scala.ScalaPlatform
+import org.gradle.workers.internal.WorkerDirectoryProvider
 import spock.lang.Specification
 
 class DownloadingScalaToolChainTest extends Specification {
 
     ConfigurationContainer configurationContainer = Mock()
     WorkerDaemonFactory workerDaemonFactory = Mock()
+    WorkerDirectoryProvider workerDirectoryProvider = Mock()
     DependencyHandler dependencyHandler = Mock()
     File gradleUserHome = Mock()
     File rootProjectDir = Mock()
-    DownloadingScalaToolChain scalaToolChain = new DownloadingScalaToolChain(gradleUserHome, rootProjectDir, workerDaemonFactory, configurationContainer, dependencyHandler)
+    DownloadingScalaToolChain scalaToolChain = new DownloadingScalaToolChain(gradleUserHome, rootProjectDir, workerDaemonFactory, workerDirectoryProvider, configurationContainer, dependencyHandler)
     ScalaPlatform scalaPlatform = Mock()
 
     def setup() {

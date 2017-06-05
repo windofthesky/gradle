@@ -38,6 +38,7 @@ import org.gradle.workers.internal.DaemonForkOptions;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.api.tasks.scala.ScalaForkOptions;
 import org.gradle.language.base.internal.compile.Compiler;
+import org.gradle.workers.internal.WorkerDirectoryProvider;
 
 import java.io.File;
 import java.util.Arrays;
@@ -45,10 +46,13 @@ import java.util.Arrays;
 public class DaemonScalaCompiler<T extends ScalaJavaJointCompileSpec> extends AbstractDaemonCompiler<T> {
     private static final Iterable<String> SHARED_PACKAGES =
             Arrays.asList("scala", "com.typesafe.zinc", "xsbti", "com.sun.tools.javac", "sbt");
+
+    private final File idleWorkingDir;
     private final Iterable<File> zincClasspath;
 
-    public DaemonScalaCompiler(File daemonWorkingDir, Compiler<T> delegate, WorkerDaemonFactory workerDaemonFactory, Iterable<File> zincClasspath) {
-        super(daemonWorkingDir, delegate, workerDaemonFactory);
+    public DaemonScalaCompiler(File executionWorkingDir, Compiler<T> delegate, WorkerDaemonFactory workerDaemonFactory, WorkerDirectoryProvider workerDirectoryProvider, Iterable<File> zincClasspath) {
+        super(executionWorkingDir, delegate, workerDaemonFactory);
+        this.idleWorkingDir = workerDirectoryProvider.getIdleWorkingDirectory();
         this.zincClasspath = zincClasspath;
     }
 
@@ -59,13 +63,13 @@ public class DaemonScalaCompiler<T extends ScalaJavaJointCompileSpec> extends Ab
 
     private DaemonForkOptions createJavaForkOptions(T spec) {
         ForkOptions options = spec.getCompileOptions().getForkOptions();
-        return new DaemonForkOptions(options.getMemoryInitialSize(), options.getMemoryMaximumSize(), options.getJvmArgs());
+        return new DaemonForkOptions(options.getMemoryInitialSize(), options.getMemoryMaximumSize(), options.getJvmArgs(), idleWorkingDir);
     }
 
     private DaemonForkOptions createScalaForkOptions(T spec) {
         ScalaForkOptions options = spec.getScalaCompileOptions().getForkOptions();
         return new DaemonForkOptions(options.getMemoryInitialSize(), options.getMemoryMaximumSize(),
-                options.getJvmArgs(), zincClasspath, SHARED_PACKAGES);
+                options.getJvmArgs(), zincClasspath, SHARED_PACKAGES, idleWorkingDir);
     }
 }
 

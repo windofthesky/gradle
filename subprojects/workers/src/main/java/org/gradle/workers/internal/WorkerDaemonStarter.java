@@ -27,8 +27,6 @@ import org.gradle.process.internal.worker.MultiRequestWorkerProcessBuilder;
 import org.gradle.process.internal.worker.WorkerProcess;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 
-import java.io.File;
-
 public class WorkerDaemonStarter {
     private final static Logger LOG = Logging.getLogger(WorkerDaemonStarter.class);
     private final WorkerProcessFactory workerDaemonProcessFactory;
@@ -41,7 +39,7 @@ public class WorkerDaemonStarter {
         this.buildOperationExecutor = buildOperationExecutor;
     }
 
-    public <T extends WorkSpec> WorkerDaemonClient<T> startDaemon(Class<? extends WorkerProtocol<T>> workerProtocolImplementationClass, File workingDir, DaemonForkOptions forkOptions) {
+    public <T extends WorkSpec> WorkerDaemonClient<T> startDaemon(Class<? extends WorkerProtocol<T>> workerProtocolImplementationClass, DaemonForkOptions forkOptions) {
         LOG.debug("Starting Gradle worker daemon with fork options {}.", forkOptions);
         Timer clock = Timers.startTimer();
         MultiRequestWorkerProcessBuilder<WorkerDaemonProcess> builder = workerDaemonProcessFactory.multiRequestWorker(WorkerDaemonProcess.class, WorkerProtocol.class, workerProtocolImplementationClass);
@@ -53,7 +51,7 @@ public class WorkerDaemonStarter {
         javaCommand.setMinHeapSize(forkOptions.getMinHeapSize());
         javaCommand.setMaxHeapSize(forkOptions.getMaxHeapSize());
         javaCommand.setJvmArgs(forkOptions.getJvmArgs());
-        javaCommand.setWorkingDir(workingDir);
+        javaCommand.setWorkingDir(forkOptions.getDefaultWorkingDir());
         WorkerDaemonProcess workerDaemonProcess = builder.build();
         WorkerProcess workerProcess = workerDaemonProcess.start();
 

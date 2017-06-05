@@ -56,10 +56,10 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
 
     def "reserves new client"() {
         def newClient = Stub(WorkerDaemonClient)
-        starter.startDaemon(serverImpl.class, workingDir, options) >> newClient
+        starter.startDaemon(serverImpl.class, options) >> newClient
 
         when:
-        def client = manager.reserveNewClient(serverImpl.class, workingDir, options)
+        def client = manager.reserveNewClient(serverImpl.class, options)
 
         then:
         newClient == client
@@ -68,11 +68,11 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
     def "can stop all created clients"() {
         def client1 = Mock(WorkerDaemonClient)
         def client2 = Mock(WorkerDaemonClient)
-        starter.startDaemon(serverImpl.class, workingDir, options) >>> [client1, client2]
+        starter.startDaemon(serverImpl.class, options) >>> [client1, client2]
 
         when:
-        manager.reserveNewClient(serverImpl.class, workingDir, options)
-        manager.reserveNewClient(serverImpl.class, workingDir, options)
+        manager.reserveNewClient(serverImpl.class, options)
+        manager.reserveNewClient(serverImpl.class, options)
         manager.stop()
 
         then:
@@ -82,10 +82,10 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
 
     def "clients can be released for further use"() {
         def client = Mock(WorkerDaemonClient) { isCompatibleWith(_) >> true }
-        starter.startDaemon(serverImpl.class, workingDir, options) >> client
+        starter.startDaemon(serverImpl.class, options) >> client
 
         when:
-        manager.reserveNewClient(serverImpl.class, workingDir, options)
+        manager.reserveNewClient(serverImpl.class, options)
 
         then:
         manager.reserveIdleClient(options) == null
@@ -101,7 +101,7 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
         def client1 = Mock(WorkerDaemonClient) { _ * getUses() >> 5 }
         def client2 = Mock(WorkerDaemonClient) { _ * getUses() >> 1 }
         def client3 = Mock(WorkerDaemonClient) { _ * getUses() >> 3 }
-        starter.startDaemon(serverImpl.class, workingDir, options) >>> [client1, client2, client3]
+        starter.startDaemon(serverImpl.class, options) >>> [client1, client2, client3]
         def stopMostPreferredClient = new Transformer<List<WorkerDaemonClient>, List<WorkerDaemonClient>>() {
             @Override
             List<WorkerDaemonClient> transform(List<WorkerDaemonClient> workerDaemonClients) {
@@ -110,7 +110,7 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
         }
 
         when:
-        3.times { manager.reserveNewClient(serverImpl.class, workingDir, options) }
+        3.times { manager.reserveNewClient(serverImpl.class, options) }
         [client1, client2, client3].each { manager.release(it) }
         manager.selectIdleClientsToStop(stopMostPreferredClient)
 
@@ -131,7 +131,7 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
         def client1 = Mock(WorkerDaemonClient) { _ * getUses() >> 5 }
         def client2 = Mock(WorkerDaemonClient) { _ * getUses() >> 1 }
         def client3 = Mock(WorkerDaemonClient) { _ * getUses() >> 3 }
-        starter.startDaemon(serverImpl.class, workingDir, options) >>> [client1, client2, client3]
+        starter.startDaemon(serverImpl.class, options) >>> [client1, client2, client3]
         def stopAll = new Transformer<List<WorkerDaemonClient>, List<WorkerDaemonClient>>() {
             @Override
             List<WorkerDaemonClient> transform(List<WorkerDaemonClient> workerDaemonClients) {
@@ -140,7 +140,7 @@ class WorkerDaemonClientsManagerTest extends ConcurrentSpecification {
         }
 
         when:
-        3.times { manager.reserveNewClient(serverImpl.class, workingDir, options) }
+        3.times { manager.reserveNewClient(serverImpl.class, options) }
         manager.release(client3)
         manager.selectIdleClientsToStop(stopAll)
 

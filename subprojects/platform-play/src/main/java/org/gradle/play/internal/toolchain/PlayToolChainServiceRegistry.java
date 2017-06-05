@@ -24,6 +24,7 @@ import org.gradle.internal.service.scopes.AbstractPluginServiceRegistry;
 import org.gradle.play.internal.spec.PlayApplicationBinaryRenderer;
 import org.gradle.process.internal.worker.WorkerProcessFactory;
 import org.gradle.workers.internal.WorkerDaemonFactory;
+import org.gradle.workers.internal.WorkerDirectoryProvider;
 
 public class PlayToolChainServiceRegistry extends AbstractPluginServiceRegistry {
 
@@ -38,8 +39,8 @@ public class PlayToolChainServiceRegistry extends AbstractPluginServiceRegistry 
     }
 
     private static class ProjectScopeCompileServices {
-        PlayToolChainInternal createPlayToolChain(FileResolver fileResolver, WorkerDaemonFactory workerDaemonFactory, ConfigurationContainer configurationContainer, DependencyHandler dependencyHandler, WorkerProcessFactory workerProcessBuilderFactory) {
-            return new DefaultPlayToolChain(fileResolver, workerDaemonFactory, configurationContainer, dependencyHandler, workerProcessBuilderFactory);
+        PlayToolChainInternal createPlayToolChain(FileResolver fileResolver, WorkerDaemonFactory workerDaemonFactory, WorkerDirectoryProvider workerDirectoryProvider, ConfigurationContainer configurationContainer, DependencyHandler dependencyHandler, WorkerProcessFactory workerProcessBuilderFactory) {
+            return new DefaultPlayToolChain(fileResolver, workerDaemonFactory, workerDirectoryProvider, configurationContainer, dependencyHandler, workerProcessBuilderFactory);
         }
     }
 }

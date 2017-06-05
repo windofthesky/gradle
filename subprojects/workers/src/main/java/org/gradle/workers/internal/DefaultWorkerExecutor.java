@@ -83,12 +83,12 @@ public class DefaultWorkerExecutor implements WorkerExecutor {
         // Serialize parameters in this thread prior to starting work in a separate thread
         ActionExecutionSpec spec;
         try {
-            spec = new ActionExecutionSpec(actionClass, description, workerDirectoryProvider.getDefaultWorkerDirectory(), configuration.getForkOptions().getWorkingDir(), configuration.getParams());
+            spec = new ActionExecutionSpec(actionClass, description, workerDirectoryProvider.getIdleWorkingDirectory(), configuration.getForkOptions().getWorkingDir(), configuration.getParams());
         } catch (Throwable t) {
             throw new WorkExecutionException(description, t);
         }
 
-        submit(spec, workerDirectoryProvider.getDefaultWorkerDirectory(), configuration.getIsolationMode(), getDaemonForkOptions(actionClass, configuration));
+        submit(spec, workerDirectoryProvider.getIdleWorkingDirectory(), configuration.getIsolationMode(), getDaemonForkOptions(actionClass, configuration));
     }
 
     private void submit(final ActionExecutionSpec spec, final File workingDir, final IsolationMode isolationMode, final DaemonForkOptions daemonForkOptions) {
@@ -99,7 +99,7 @@ public class DefaultWorkerExecutor implements WorkerExecutor {
             public DefaultWorkResult call() throws Exception {
                 try {
                     WorkerFactory workerFactory = getWorkerFactory(isolationMode);
-                    Worker<ActionExecutionSpec> worker = workerFactory.getWorker(getWorkerServer(isolationMode), workingDir, daemonForkOptions);
+                    Worker<ActionExecutionSpec> worker = workerFactory.getWorker(getWorkerServer(isolationMode), daemonForkOptions);
                     return worker.execute(spec, currentWorkerWorkerLease, currentBuildOperation);
                 } catch (Throwable t) {
                     throw new WorkExecutionException(spec.getDisplayName(), t);
@@ -249,7 +249,7 @@ public class DefaultWorkerExecutor implements WorkerExecutor {
         Iterable<File> daemonClasspath = classpathBuilder.build();
         Iterable<String> daemonSharedPackages = sharedPackagesBuilder.build();
 
-        return new DaemonForkOptions(forkOptions.getMinHeapSize(), forkOptions.getMaxHeapSize(), forkOptions.getAllJvmArgs(), daemonClasspath, daemonSharedPackages);
+        return new DaemonForkOptions(forkOptions.getMinHeapSize(), forkOptions.getMaxHeapSize(), forkOptions.getAllJvmArgs(), daemonClasspath, daemonSharedPackages, workerDirectoryProvider.getIdleWorkingDirectory());
     }
 
     private static void addVisibilityFor(Class<?> visibleClass, ImmutableSet.Builder<File> classpathBuilder, ImmutableSet.Builder<String> sharedPackagesBuilder, boolean addToSharedPackages) {

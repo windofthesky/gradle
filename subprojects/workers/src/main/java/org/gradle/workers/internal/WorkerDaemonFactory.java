@@ -25,8 +25,6 @@ import org.gradle.internal.work.WorkerLeaseRegistry.WorkerLease;
 import org.gradle.process.internal.health.memory.MemoryManager;
 import org.gradle.process.internal.health.memory.TotalPhysicalMemoryProvider;
 
-import java.io.File;
-
 /**
  * Controls the lifecycle of the worker daemon and provides access to it.
  */
@@ -48,12 +46,12 @@ public class WorkerDaemonFactory implements WorkerFactory, Stoppable {
     }
 
     @Override
-    public <T extends WorkSpec> Worker<T> getWorker(final Class<? extends WorkerProtocol<T>> workerImplementationClass, final File workingDir, final DaemonForkOptions forkOptions) {
+    public <T extends WorkSpec> Worker<T> getWorker(final Class<? extends WorkerProtocol<T>> workerImplementationClass, final DaemonForkOptions forkOptions) {
         return new Worker<T>() {
             public DefaultWorkResult execute(T spec, WorkerLease parentWorkerWorkerLease, BuildOperationState parentBuildOperation) {
                 WorkerDaemonClient<T> client = clientsManager.reserveIdleClient(forkOptions);
                 if (client == null) {
-                    client = clientsManager.reserveNewClient(workerImplementationClass, workingDir, forkOptions);
+                    client = clientsManager.reserveNewClient(workerImplementationClass, forkOptions);
                 }
                 try {
                     return client.execute(spec, parentWorkerWorkerLease, parentBuildOperation);
