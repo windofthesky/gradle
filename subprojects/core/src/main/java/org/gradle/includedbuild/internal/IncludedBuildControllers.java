@@ -16,9 +16,10 @@
 package org.gradle.includedbuild.internal;
 
 import org.gradle.api.artifacts.component.BuildIdentifier;
+import org.gradle.internal.progress.BuildOperationState;
 
 public interface IncludedBuildControllers {
-    void startTaskExecution();
+    void startTaskExecution(BuildOperationState parentOperation);
 
     IncludedBuildController getBuildController(BuildIdentifier buildIdentifier);
 }

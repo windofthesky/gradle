@@ -30,6 +30,7 @@ import org.gradle.includedbuild.IncludedBuild;
 import org.gradle.includedbuild.internal.IncludedBuildController;
 import org.gradle.internal.UncheckedException;
 import org.gradle.internal.concurrent.Stoppable;
+import org.gradle.internal.progress.BuildOperationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,13 +56,15 @@ class DefaultIncludedBuildController implements Runnable, Stoppable, IncludedBui
     private final Condition taskQueued = lock.newCondition();
     private final Condition taskCompleted = lock.newCondition();
 
-    public DefaultIncludedBuildController(IncludedBuild includedBuild) {
-        this.includedBuild = (IncludedBuildInternal) includedBuild;
-    }
-
     private final CountDownLatch started = new CountDownLatch(1);
     private final AtomicBoolean stopRequested = new AtomicBoolean();
     private final CountDownLatch stopped = new CountDownLatch(1);
+
+    private BuildOperationState parentOperation;
+
+    public DefaultIncludedBuildController(IncludedBuild includedBuild) {
+        this.includedBuild = (IncludedBuildInternal) includedBuild;
+    }
 
     @Override
     public void run() {
@@ -81,7 +84,9 @@ class DefaultIncludedBuildController implements Runnable, Stoppable, IncludedBui
         stopped.countDown();
     }
 
-    public void startTaskExecution() {
+    @Override
+    public void startTaskExecution(BuildOperationState parentOperation) {
+        this.parentOperation = parentOperation;
         started.countDown();
     }
 
@@ -140,7 +145,7 @@ class DefaultIncludedBuildController implements Runnable, Stoppable, IncludedBui
         }
         LOGGER.info("Executing " + includedBuild.getName() + " tasks " + tasksToExecute);
         IncludedBuildExecutionListener listener = new IncludedBuildExecutionListener(tasksToExecute);
-        includedBuild.execute(tasksToExecute, listener);
+        includedBuild.execute(tasksToExecute, parentOperation, listener);
     }
 
     private void taskCompleted(String task, Throwable failure) {

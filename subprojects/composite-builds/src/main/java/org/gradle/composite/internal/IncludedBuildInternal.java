@@ -21,10 +21,11 @@ import org.gradle.includedbuild.ConfigurableIncludedBuild;
 import org.gradle.api.internal.GradleInternal;
 import org.gradle.api.internal.SettingsInternal;
 import org.gradle.api.internal.artifacts.ivyservice.dependencysubstitution.DependencySubstitutionsInternal;
+import org.gradle.internal.progress.BuildOperationState;
 
 public interface IncludedBuildInternal extends ConfigurableIncludedBuild {
     DependencySubstitutionsInternal resolveDependencySubstitutions();
     SettingsInternal getLoadedSettings();
     GradleInternal getConfiguredBuild();
-    BuildResult execute(Iterable<String> tasks, Object listener);
+    BuildResult execute(Iterable<String> tasks, BuildOperationState parentOp, Object listener);
 }

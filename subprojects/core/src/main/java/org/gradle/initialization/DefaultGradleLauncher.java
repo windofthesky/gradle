@@ -171,7 +171,7 @@ public class DefaultGradleLauncher implements GradleLauncher {
 
         if (!gradle.getIncludedBuilds().isEmpty()) {
             IncludedBuildControllers buildControllers = gradle.getServices().get(IncludedBuildControllers.class);
-            buildControllers.startTaskExecution();
+            buildControllers.startTaskExecution(buildOperationExecutor.getCurrentOperation());
         }
 
         buildOperationExecutor.run(new ExecuteTasks());

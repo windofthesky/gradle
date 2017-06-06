@@ -29,6 +29,11 @@ import org.gradle.api.internal.artifacts.ivyservice.dependencysubstitution.Depen
 import org.gradle.api.tasks.TaskReference;
 import org.gradle.initialization.GradleLauncher;
 import org.gradle.internal.Factory;
+import org.gradle.internal.operations.BuildOperationContext;
+import org.gradle.internal.operations.BuildOperationExecutor;
+import org.gradle.internal.operations.CallableBuildOperation;
+import org.gradle.internal.progress.BuildOperationDescriptor;
+import org.gradle.internal.progress.BuildOperationState;
 
 import java.io.File;
 import java.util.List;
@@ -38,11 +43,13 @@ public class DefaultIncludedBuild implements IncludedBuildInternal {
     private final Factory<GradleLauncher> gradleLauncherFactory;
     private final ImmutableModuleIdentifierFactory moduleIdentifierFactory;
     private final List<Action<? super DependencySubstitutions>> dependencySubstitutionActions = Lists.newArrayList();
+
     private DefaultDependencySubstitutions dependencySubstitutions;
 
     private GradleLauncher gradleLauncher;
     private SettingsInternal settings;
     private GradleInternal gradle;
+    private String name;
 
     public DefaultIncludedBuild(File projectDir, Factory<GradleLauncher> launcherFactory, ImmutableModuleIdentifierFactory moduleIdentifierFactory) {
         this.projectDir = projectDir;
@@ -61,8 +68,11 @@ public class DefaultIncludedBuild implements IncludedBuildInternal {
     }
 
     @Override
-    public synchronized String getName() {
-        return getLoadedSettings().getRootProject().getName();
+    public String getName() {
+        if (name == null) {
+            name = getLoadedSettings().getRootProject().getName();
+        }
+        return name;
     }
 
     @Override
@@ -119,16 +129,27 @@ public class DefaultIncludedBuild implements IncludedBuildInternal {
     }
 
     @Override
-    public BuildResult execute(Iterable<String> tasks, Object listener) {
-        GradleLauncher launcher = getGradleLauncher();
-        GradleInternal gradle = launcher.getGradle();
-        gradle.getStartParameter().setTaskNames(tasks);
-        gradle.addListener(listener);
-        try {
-            return launcher.run();
-        } finally {
-            markAsNotReusable();
-        }
+    public BuildResult execute(final Iterable<String> tasks, final BuildOperationState parentOperation, final Object listener) {
+        final GradleLauncher launcher = getGradleLauncher();
+        final GradleInternal gradle = launcher.getGradle();
+        BuildOperationExecutor buildOperationExecutor = gradle.getServices().get(BuildOperationExecutor.class);
+        return buildOperationExecutor.call(new CallableBuildOperation<BuildResult>() {
+            @Override
+            public BuildResult call(BuildOperationContext context) {
+                gradle.getStartParameter().setTaskNames(tasks);
+                gradle.addListener(listener);
+                try {
+                    return launcher.run();
+                } finally {
+                    markAsNotReusable();
+                }
+            }
+
+            @Override
+            public BuildOperationDescriptor.Builder description() {
+                return BuildOperationDescriptor.displayName("Run included build (" + gradle.getIdentityPath() + ")").parent(parentOperation);
+            }
+        });
     }
 
     private void markAsNotReusable() {
